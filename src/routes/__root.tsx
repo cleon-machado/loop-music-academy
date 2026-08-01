@@ -86,9 +86,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "LOOP — Music Academy" },
-      { name: "twitter:description", content: "LOOP Music Academy — Make music part of your life." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/58587a41-50e4-4c47-8a7f-111495967ce5/id-preview-1ea67c83--703a0618-7572-485d-a212-5e408f3138a8.lovable.app-1784617660669.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/58587a41-50e4-4c47-8a7f-111495967ce5/id-preview-1ea67c83--703a0618-7572-485d-a212-5e408f3138a8.lovable.app-1784617660669.png" },
+      {
+        name: "twitter:description",
+        content: "LOOP Music Academy — Make music part of your life.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/58587a41-50e4-4c47-8a7f-111495967ce5/id-preview-1ea67c83--703a0618-7572-485d-a212-5e408f3138a8.lovable.app-1784617660669.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/58587a41-50e4-4c47-8a7f-111495967ce5/id-preview-1ea67c83--703a0618-7572-485d-a212-5e408f3138a8.lovable.app-1784617660669.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -99,9 +110,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-      { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-      { rel: "icon", href: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,

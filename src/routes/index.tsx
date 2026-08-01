@@ -1,16 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { ArrowUpRight, ChevronRight, Menu, Play, Star } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ArrowUpRight, ChevronRight, Play, Star } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AmbientCanvas } from "@/components/loop/AmbientCanvas";
+import { HeroStrings } from "@/components/loop/HeroStrings";
 import { PhoneExperience } from "@/components/loop/PhoneExperience";
-import { Wordmark } from "@/components/loop/Wordmark";
-import loopLogo from "@/assets/loop-logo.png";
+import { SiteNav } from "@/components/loop/SiteNav";
+import { SiteFooter } from "@/components/loop/SiteFooter";
+import { WhatsappFab } from "@/components/loop/WhatsappFab";
+import { Reveal } from "@/components/loop/Reveal";
+import { FounderCard } from "@/components/loop/FounderCard";
+import { FounderModal } from "@/components/loop/FounderModal";
+import { founders, type Founder } from "@/lib/founders-data";
+
 import blueAmbient from "@/assets/loop/blue-ambient.jpg";
 import vocalMic from "@/assets/loop/vocal-mic.png";
 import pianoImg from "@/assets/loop/piano.png";
-import guitarImg from "@/assets/loop/guitar.png";
+import songwritingImg from "@/assets/loop/songwriting.png";
+import micTile from "@/assets/loop/card-mic.png";
+import pianoTile from "@/assets/loop/card-piano.png";
+import guitarTile from "@/assets/loop/guitar-tile.png";
+import songwritingTile from "@/assets/loop/songwriting-cropped.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,17 +40,18 @@ export const Route = createFileRoute("/")({
   component: LoopHome,
 });
 
-const founders = [
-  { name: "Mithilesh Panchal", initials: "MP", role: "Vocals · Founder" },
-  { name: "Garvit Soni", initials: "GS", role: "Guitar · Founder" },
-  { name: "Priyansh Srivastava", initials: "PS", role: "Piano · Founder" },
-];
-
 const stats: [string, string][] = [
   ["500+", "STUDENTS MENTORED"],
   ["15+", "YEARS TEACHING EXPERIENCE"],
   ["200+", "STAGE PERFORMANCES"],
   ["30+", "LIVE GROUP BATCHES"],
+];
+
+const heroTiles = [
+  { name: "Piano", label: "First note to full song", image: pianoTile, className: "pos-tl" },
+  { name: "Guitar", label: "Lead the room", image: guitarTile, className: "pos-tr" },
+  { name: "Vocals", label: "Find your sound", image: micTile, className: "pos-bl" },
+  { name: "Songwriting", label: "Write your story", image: songwritingTile, className: "pos-br" },
 ];
 
 const courses = [
@@ -51,6 +63,7 @@ const courses = [
     badge: null as string | null,
     image: vocalMic,
     imageClass: "course-image-vocal",
+    href: "#book",
   },
   {
     tags: "CONTEMPORARY · CLASSICAL · BOLLYWOOD",
@@ -60,6 +73,7 @@ const courses = [
     badge: "MOST POPULAR" as string | null,
     image: pianoImg,
     imageClass: "course-image-piano",
+    href: "/piano",
   },
   {
     tags: "ACOUSTIC · ELECTRIC · FINGERSTYLE",
@@ -67,54 +81,47 @@ const courses = [
     description:
       "Practical playing ability built through guided, live online sessions — from first chord to consistent technique.",
     badge: null as string | null,
-    image: guitarImg,
+    image: guitarTile,
     imageClass: "course-image-guitar",
+    href: "/guitar",
+  },
+  {
+    tags: "LYRICS · MELODY · STRUCTURE",
+    name: "Songwriting",
+    description:
+      "Turn ideas into finished songs. Learn lyric writing, melody craft, song structure and arrangement in live mentor-led sessions.",
+    badge: null as string | null,
+    image: songwritingImg,
+    imageClass: "course-image-songwriting",
+    href: "#book",
   },
 ];
 
 const testimonials: [string, string][] = [
-  ["LOOP gave me the structure to take my music seriously — and the confidence to put it out there.", "Aarav · Vocal student"],
-  ["The sessions are warm, specific and genuinely inspiring. I look forward to practice now.", "Maya · Piano student"],
-  ["Sixteen sessions in and I finally understand my own instrument. Every class has a purpose.", "Rohan · Guitar student"],
-  ["My mentor still performs on stage — that changes how they teach. It shows in every lesson.", "Diya · Vocal student"],
+  [
+    "LOOP gave me the structure to take my music seriously — and the confidence to put it out there.",
+    "Aarav · Vocal student",
+  ],
+  [
+    "The sessions are warm, specific and genuinely inspiring. I look forward to practice now.",
+    "Maya · Piano student",
+  ],
+  [
+    "Sixteen sessions in and I finally understand my own instrument. Every class has a purpose.",
+    "Rohan · Guitar student",
+  ],
+  [
+    "My mentor still performs on stage — that changes how they teach. It shows in every lesson.",
+    "Diya · Vocal student",
+  ],
 ];
 
-function Reveal({
-  children,
-  className = "",
-  ...rest
-}: { children: React.ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const item = ref.current;
-    if (!item || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        item,
-        { y: 28, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: { trigger: item, start: "top 88%" },
-        },
-      );
-    }, item);
-    return () => ctx.revert();
-  }, []);
-  return (
-    <div ref={ref} className={className} {...rest}>
-      {children}
-    </div>
-  );
-}
-
 function LoopHome() {
-  const vinylRef = useRef<HTMLDivElement>(null);
+  const heroSequenceRef = useRef<HTMLDivElement>(null);
   const courseGridRef = useRef<HTMLDivElement>(null);
   const courseCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const founderGridRef = useRef<HTMLDivElement>(null);
+  const [activeFounder, setActiveFounder] = useState<Founder | null>(null);
 
   useEffect(() => {
     const grid = founderGridRef.current;
@@ -146,67 +153,139 @@ function LoopHome() {
           ".hero-kicker, .hero-title .line, .hero-copy, .hero-actions, .hero-foot",
           { y: 28, opacity: 0, duration: 0.85, stagger: 0.1 },
           "-=0.35",
-        )
-        .from(".vinyl-composition", { scale: 0.78, opacity: 0, duration: 1.6 }, "-=1");
+        );
     });
     return () => ctx.revert();
   }, []);
 
-  useEffect(() => {
-    const vinyl = vinylRef.current;
-    if (!vinyl || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  useLayoutEffect(() => {
+    const sequence = heroSequenceRef.current;
+    if (!sequence || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let angle = 0;
-    let lastFrame = performance.now();
-    let frame = 0;
-    let dragging = false;
-    let lastPointerAngle = 0;
-    const centerAngle = (event: PointerEvent) => {
-      const rect = vinyl.getBoundingClientRect();
-      return Math.atan2(
-        event.clientY - (rect.top + rect.height / 2),
-        event.clientX - (rect.left + rect.width / 2),
+    const tiles = gsap.utils.toArray<HTMLElement>(".hero-tile", sequence);
+    const phone = sequence.querySelector<HTMLElement>(".phone-wrap");
+    const phoneStage = sequence.querySelector<HTMLElement>(".phone-stage");
+    const phoneScreen = sequence.querySelector<HTMLElement>(".phone-screen");
+    const courseHeading = sequence.querySelector<HTMLElement>(".screen-courses-label");
+    const experienceCopy = sequence.querySelectorAll<HTMLElement>(".experience-copy");
+    const heroContent = sequence.querySelector<HTMLElement>(".hero-content");
+    const heroFoot = sequence.querySelector<HTMLElement>(".hero-foot");
+    const heroAtmosphere = sequence.querySelectorAll<HTMLElement>(
+      ".hero-strings, .hero-light, .hero-aurora",
+    );
+    if (!phone || !phoneStage || !phoneScreen || tiles.length !== 4) return;
+
+    const ctx = gsap.context(() => {
+      // Measure the phone in its completed position, then move it down until only its
+      // top edge is visible. The tiles remain one set of DOM nodes for the entire move.
+      const isMobile = window.innerWidth < 561;
+      gsap.set(phoneStage, { y: 0 });
+
+      // Mobile can inherit an inline horizontal transform when the viewport changes
+      // from desktop. Center from the phone's actual rendered bounds instead of
+      // assuming which transform values GSAP has cached.
+      if (isMobile) {
+        const phoneBounds = phone.getBoundingClientRect();
+        const centerOffset = window.innerWidth / 2 - (phoneBounds.left + phoneBounds.width / 2);
+        gsap.set(phoneStage, { x: `+=${centerOffset}` });
+      }
+
+      const finishedPhone = phone.getBoundingClientRect();
+      const finishedScreen = phoneScreen.getBoundingClientRect();
+      const finishedHeading = courseHeading?.getBoundingClientRect();
+      const phonePeek = isMobile ? 152 : window.innerWidth < 801 ? 72 : 96;
+      const startPhoneY = Math.max(0, window.innerHeight - phonePeek - finishedPhone.top);
+      gsap.set(phoneStage, { y: startPhoneY });
+
+      const starts = tiles.map((tile) => {
+        const rect = tile.getBoundingClientRect();
+        return {
+          centerX: rect.left + rect.width / 2,
+          centerY: rect.top + rect.height / 2,
+          x: Number(gsap.getProperty(tile, "x")),
+          y: Number(gsap.getProperty(tile, "y")),
+        };
+      });
+
+      const targetFor = (index: number) => {
+        const tile = tiles[index];
+        const cellGutter = window.innerWidth < 801 ? 6 : 8;
+        const gridGap = window.innerWidth < 801 ? 10 : 14;
+        const usableWidth = finishedScreen.width * 0.84;
+        const cellWidth = (usableWidth - cellGutter) / 2;
+        const tileScale = Math.min(
+          cellWidth / tile.offsetWidth,
+          (finishedScreen.height * 0.21) / tile.offsetHeight,
+        );
+        const tileWidth = tile.offsetWidth * tileScale;
+        const tileHeight = tile.offsetHeight * tileScale;
+        const isRight = index === 1 || index === 3;
+        const isBottom = index === 2 || index === 3;
+        const headingBottom = finishedHeading?.bottom;
+        const gridTop = headingBottom
+          ? headingBottom + gridGap + 8
+          : finishedScreen.top + finishedScreen.height * 0.45 + 8;
+        const centerX =
+          finishedScreen.left +
+          (finishedScreen.width - (tileWidth * 2 + gridGap)) / 2 +
+          (isRight ? tileWidth * 1.5 + gridGap : tileWidth / 2);
+        const centerY = gridTop + tileHeight / 2 + (isBottom ? tileHeight + gridGap : 0);
+
+        return {
+          x: starts[index].x + centerX - starts[index].centerX,
+          y: starts[index].y + centerY - starts[index].centerY,
+          scale: tileScale,
+        };
+      };
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "power2.inOut" },
+        scrollTrigger: {
+          trigger: sequence,
+          start: "top top",
+          end: "+=1500",
+          pin: true,
+          scrub: 0.45,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      timeline.to(phoneStage, { y: 0, duration: 1 }, 0);
+
+      timeline.fromTo(
+        experienceCopy,
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.42, stagger: 0.08 },
+        0.56,
       );
-    };
-    const render = (time: number) => {
-      if (!dragging) angle += (time - lastFrame) * 0.015;
-      lastFrame = time;
-      vinyl.style.setProperty("--vinyl-angle", `${angle}deg`);
-      frame = requestAnimationFrame(render);
-    };
-    const onPointerDown = (event: PointerEvent) => {
-      dragging = true;
-      lastPointerAngle = centerAngle(event);
-      vinyl.setPointerCapture(event.pointerId);
-      vinyl.classList.add("is-dragging");
-    };
-    const onPointerMove = (event: PointerEvent) => {
-      if (!dragging) return;
-      const currentAngle = centerAngle(event);
-      let delta = currentAngle - lastPointerAngle;
-      if (delta > Math.PI) delta -= Math.PI * 2;
-      if (delta < -Math.PI) delta += Math.PI * 2;
-      angle += delta * (180 / Math.PI);
-      lastPointerAngle = currentAngle;
-    };
-    const onPointerEnd = (event: PointerEvent) => {
-      if (!dragging) return;
-      dragging = false;
-      if (vinyl.hasPointerCapture(event.pointerId)) vinyl.releasePointerCapture(event.pointerId);
-      vinyl.classList.remove("is-dragging");
-    };
-    vinyl.addEventListener("pointerdown", onPointerDown);
-    vinyl.addEventListener("pointermove", onPointerMove);
-    vinyl.addEventListener("pointerup", onPointerEnd);
-    vinyl.addEventListener("pointercancel", onPointerEnd);
-    frame = requestAnimationFrame(render);
-    return () => {
-      cancelAnimationFrame(frame);
-      vinyl.removeEventListener("pointerdown", onPointerDown);
-      vinyl.removeEventListener("pointermove", onPointerMove);
-      vinyl.removeEventListener("pointerup", onPointerEnd);
-      vinyl.removeEventListener("pointercancel", onPointerEnd);
-    };
+
+      timeline.to(
+        tiles,
+        {
+          x: (index) => targetFor(index).x,
+          y: (index) => targetFor(index).y,
+          scale: (index) => targetFor(index).scale,
+          rotation: 0,
+          filter: "blur(0px)",
+          duration: 1,
+          stagger: { each: 0.025, from: "center" },
+        },
+        0.04,
+      );
+
+      if (heroContent) {
+        timeline.to(heroContent, { yPercent: -12, autoAlpha: 0, duration: 0.38 }, 0.18);
+      }
+      if (heroFoot) {
+        timeline.to(heroFoot, { autoAlpha: 0, duration: 0.22 }, 0.16);
+      }
+      if (heroAtmosphere.length) {
+        timeline.to(heroAtmosphere, { autoAlpha: 0, duration: 0.3 }, 0.2);
+      }
+    }, sequence);
+
+    return () => ctx.revert();
   }, []);
 
   useEffect(() => {
@@ -284,96 +363,62 @@ function LoopHome() {
     <main id="top" className="loop-main">
       <div className="page-noise" />
       <AmbientCanvas />
-      <nav className="nav">
-        <Wordmark compact />
-        <div className="nav-links">
-          <a href="#courses">Courses</a>
-          <a href="#founders">Founders</a>
-          <a href="#book">1:1 Session</a>
-        </div>
-        <div className="nav-right">
-          <a href="#book" className="nav-enroll">
-            Enroll Now
-          </a>
-          <button className="menu-button" aria-label="Open menu">
-            <Menu size={20} />
-          </button>
-        </div>
-      </nav>
+      <SiteNav page="home" />
 
-      <section className="hero">
-        <div className="hero-light" style={{ backgroundImage: `url(${blueAmbient})` }} />
-        <div className="hero-aurora" />
-        <div className="hero-content">
-          <span className="hero-kicker">
-            <i /> MUSIC IS A PRACTICE
-          </span>
-          <h1 className="hero-title">
-            <span className="line">Made by artists,</span>
-            <span className="line italic">for the artists.</span>
-          </h1>
-          <p className="hero-copy">
-            A modern music academy for the curious, the committed and everyone in between.
-          </p>
-          <div className="hero-actions">
-            <a className="button button-primary" href="#courses">
-              Find your sound <ChevronRight size={17} />
-            </a>
-            <a className="button button-quiet" href="#experience">
-              <span className="play-icon">
-                <Play size={12} fill="currentColor" />
-              </span>{" "}
-              See how it works
-            </a>
+      <div className="hero-phone-sequence" ref={heroSequenceRef}>
+        <section className="hero">
+          <div className="hero-light" style={{ backgroundImage: `url(${blueAmbient})` }} />
+          <div className="hero-aurora" />
+          <HeroStrings />
+          <div className="hero-tiles" aria-label="LOOP courses">
+            {heroTiles.map(({ name, label, image, className }) => (
+              <article className={`feature-tile hero-tile ${className}`} key={name}>
+                <div className="tile-image-wrap">
+                  <img
+                    src={image}
+                    alt=""
+                    className="tile-image"
+                    draggable={false}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="tile-copy">
+                  <strong>{name}</strong>
+                  <small>{label}</small>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
-        <div className="hero-art">
-          <div className="vinyl-composition" aria-hidden="true">
-            <div className="vinyl-halo" />
-            <div
-              className="vinyl-record"
-              ref={vinylRef}
-              aria-label="Spinning LOOP vinyl record. Drag to rotate."
-            >
-              <div className="vinyl-sheen" />
-              <div className="vinyl-grooves" />
-              <div className="vinyl-label">
-                <img
-                  className="label-wordmark"
-                  src={loopLogo}
-                  alt="LOOP Music Academy"
-                  draggable={false}
-                />
-                <i className="label-spindle" />
-                <em className="label-tagline">
-                  MAKE MUSIC
-                  <br />
-                  PART OF YOUR LIFE
-                </em>
-                <b>
-                  SIDE A<br />
-                  33⅓ RPM
-                </b>
-              </div>
-            </div>
-            <div className="tonearm">
-              <i className="tonearm-pivot" />
-              <span className="tonearm-tube" />
-              <b className="tonearm-head">
-                <i />
-              </b>
+          <div className="hero-content">
+            <h1 className="hero-title">
+              <span className="line">Made by artists,</span>
+              <span className="line italic">for the artists.</span>
+            </h1>
+            <p className="hero-copy">
+              A modern music academy for the curious, the committed and everyone in between.
+            </p>
+            <div className="hero-actions">
+              <a className="button button-primary" href="#courses">
+                Find your sound <ChevronRight size={17} />
+              </a>
+              <a className="button button-quiet" href="#experience">
+                <span className="play-icon">
+                  <Play size={12} fill="currentColor" />
+                </span>{" "}
+                See how it works
+              </a>
             </div>
           </div>
-        </div>
-        <div className="hero-foot">
-          <span>EST. 2021 · BENGALURU</span>
-          <span>
-            SCROLL TO BEGIN <b>↓</b>
-          </span>
-        </div>
-      </section>
+          <div className="hero-foot">
+            <span>EST. 2021 · BENGALURU</span>
+            <span>
+              SCROLL TO BEGIN <b>↓</b>
+            </span>
+          </div>
+        </section>
 
-      <PhoneExperience />
+        <PhoneExperience />
+      </div>
 
       <section className="founders" id="founders">
         <Reveal className="founders-head">
@@ -390,25 +435,17 @@ function LoopHome() {
             student gets a monthly masterclass with the founders.
           </p>
         </Reveal>
-        <Reveal className="founders-banner">
-          <div className="founders-banner-overlay" />
-          <span className="founders-banner-placeholder">Group photo placeholder</span>
-          <span className="founders-banner-label">INSIDE LOOP — ALL THREE FOUNDERS</span>
-          
-        </Reveal>
         <div className="founder-grid" ref={founderGridRef}>
-          {founders.map(({ name, initials, role }) => (
-            <div className="founder-card" key={initials}>
-              <div className="founder-photo">
-                <span className="founder-photo-placeholder">Photo placeholder</span>
-                <span className="founder-badge">{initials}</span>
-              </div>
-              <p className="founder-name">{name}</p>
-              <p className="founder-role">{role}</p>
-            </div>
+          {founders.map((founder) => (
+            <FounderCard founder={founder} onLearnMore={setActiveFounder} key={founder.id} />
           ))}
         </div>
       </section>
+
+      <FounderModal
+        founder={activeFounder}
+        onOpenChange={(open) => !open && setActiveFounder(null)}
+      />
 
       <section className="stats">
         <div className="stats-grid">
@@ -432,7 +469,7 @@ function LoopHome() {
           <p>Every batch is live, structured, and led by musicians who still take the stage.</p>
         </Reveal>
         <div className="course-grid" ref={courseGridRef}>
-          {courses.map(({ tags, name, description, badge, image, imageClass }, index) => (
+          {courses.map(({ tags, name, description, badge, image, imageClass, href }, index) => (
             <Reveal className="course-card-reveal" key={name}>
               <div
                 className="course-card"
@@ -447,9 +484,23 @@ function LoopHome() {
                 <span className="course-tags">{tags}</span>
                 <h3>{name}</h3>
                 <p>{description}</p>
-                <a href="#book" className="course-link">
-                  EXPLORE COURSE <ArrowUpRight size={14} />
-                </a>
+                {name === "Piano" ? (
+                  <Link to="/piano" className="course-link">
+                    EXPLORE COURSE <ArrowUpRight size={14} />
+                  </Link>
+                ) : name === "Guitar" ? (
+                  <Link to="/guitar" className="course-link">
+                    EXPLORE COURSE <ArrowUpRight size={14} />
+                  </Link>
+                ) : name === "Songwriting" ? (
+                  <Link to="/songwriting" className="course-link">
+                    EXPLORE COURSE <ArrowUpRight size={14} />
+                  </Link>
+                ) : (
+                  <Link to="/vocal" className="course-link">
+                    EXPLORE COURSE <ArrowUpRight size={14} />
+                  </Link>
+                )}
               </div>
             </Reveal>
           ))}
@@ -506,60 +557,19 @@ function LoopHome() {
             <span className="book-price-value">
               ₹799<small>/session</small>
             </span>
-            <a className="button button-book" href="mailto:hello@loopmusic.academy">
+            <Link
+              className="button button-book"
+              to="/founders"
+            >
               Book a Session <ArrowUpRight size={16} />
-            </a>
+            </Link>
             <span className="book-price-note">No commitment · Cancel anytime</span>
           </div>
         </Reveal>
       </section>
 
-      <footer className="site-footer">
-        <div className="footer-top">
-          <div className="footer-brand">
-            <Wordmark />
-            <p>
-              A modern music academy for the curious, the committed and everyone in between.
-            </p>
-          </div>
-          <div className="footer-col">
-            <span className="footer-heading">Founders</span>
-            <span>Mithilesh Panchal · Vocals</span>
-            <span>Garvit Soni · Guitar</span>
-            <span>Priyansh Srivastava · Piano</span>
-          </div>
-          <div className="footer-col">
-            <span className="footer-heading">Explore</span>
-            <a href="#courses">Courses</a>
-            <a href="#founders">Founders</a>
-            <a href="#book">1:1 Session</a>
-          </div>
-          <div className="footer-col">
-            <span className="footer-heading">Follow</span>
-            <a href="#top">Instagram</a>
-            <a href="#top">YouTube</a>
-            <a href="mailto:hello@loopmusic.academy">Contact</a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2025 LOOP Music Academy</span>
-          <span>Bengaluru, India</span>
-        </div>
-      </footer>
-
-      <button
-        type="button"
-        className="whatsapp-fab"
-        aria-label="Chat with us on WhatsApp"
-      >
-        <span className="whatsapp-fab-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width={24} height={24} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.36.101 11.943c0 2.096.549 4.142 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 0 0 5.71 1.44h.006c6.585 0 11.937-5.361 11.94-11.943a11.874 11.874 0 0 0-3.47-8.396" />
-          </svg>
-        </span>
-        <span className="whatsapp-fab-label">Chat with us</span>
-        <span className="whatsapp-fab-pulse" aria-hidden="true" />
-      </button>
+      <SiteFooter page="home" />
+      <WhatsappFab />
     </main>
   );
 }
